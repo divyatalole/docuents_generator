@@ -1,0 +1,55 @@
+{
+  "name": "solar-quotation-app",
+  "version": "1.0.0",
+  "description": "Solar Installation Quotation Generator",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "predev": "node -e \"var{execSync}=require('child_process');try{execSync('npx --yes kill-port 5173',{stdio:'ignore'})}catch(_){}\"",
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 --timeout 30000 && electron .\"",
+    "build": "vite build && electron-builder",
+    "dist": "vite build && electron-builder --win --mac"
+  },
+  "build": {
+    "appId": "com.pvenviroenergies.solar-quotation",
+    "productName": "Solar Quotation",
+    "icon": "assets/icon.png",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.png"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "release"
+    }
+  },
+  "keywords": [
+    "solar",
+    "quotation",
+    "electron"
+  ],
+  "author": "PV-Enviro Energies Pvt. Ltd.",
+  "license": "MIT",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "electron": "^29.4.6",
+    "electron-builder": "^24.13.3",
+    "vite": "^5.1.6",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.363.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}
