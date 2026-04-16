@@ -129,7 +129,7 @@ export default function Dashboard({ navigate }) {
                       {q.date ? new Date(q.date).toLocaleDateString('en-IN') : '—'}
                     </td>
                     <td style={{ fontWeight: 500 }}>{q.customerName}</td>
-                    <td style={{ color: 'var(--gray-600)' }}>{q.systemCapacity?.toFixed(2)} kW</td>
+                    <td style={{ color: 'var(--gray-600)' }}>{parseFloat(q.systemCapacity || 0).toFixed(2)} kW</td>
                     <td className="font-mono" style={{ fontWeight: 600 }}>{fmt(q.totalCost)}</td>
                     <td className="text-green font-mono">{fmt(q.subsidy)}</td>
                     <td className="font-mono" style={{ color: 'var(--amber-dark)', fontWeight: 700 }}>{fmt(q.netPayable)}</td>

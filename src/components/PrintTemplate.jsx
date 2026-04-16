@@ -15,23 +15,17 @@ export function generatePrintHTML(quote, settings) {
   const warrantyPanel = defs.panelWarranty || 25
   const warrantyInverter = defs.inverterWarranty || 10
 
-  const rows = [
-    { desc: `Solar Panel — ${quote.panel}`, qty: quote.panelCount, unit: `${inr(quote.panelCostPerUnit)}/unit`, amount: quote.panelCostPerUnit * quote.panelCount },
-    { desc: `Solar Inverter — ${quote.inverter}`, qty: 1, unit: inr(quote.inverterCost), amount: quote.inverterCost },
-    { desc: `Mounting Structure — ${quote.mountingStructure}`, qty: 1, unit: inr(quote.structureCost), amount: quote.structureCost },
-    { desc: `Wiring & LA Kit — ${quote.wiringKit}`, qty: 1, unit: inr(quote.wiringCost), amount: quote.wiringCost },
-    { desc: 'Installation & Commissioning Charges', qty: 1, unit: inr(quote.installationCharges), amount: quote.installationCharges },
-    ...(quote.otherCharges > 0 ? [{ desc: 'Other Charges', qty: 1, unit: inr(quote.otherCharges), amount: quote.otherCharges }] : [])
-  ]
-
-  const tableRows = rows.map(r => `
-    <tr>
-      <td style="padding:8px 10px;border:1px solid #e2e8f0;font-size:13px;">${r.desc}</td>
-      <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:center;font-size:13px;">${r.qty}</td>
-      <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;font-size:13px;">${r.unit}</td>
-      <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;font-size:13px;font-weight:600;">${inr(r.amount)}</td>
-    </tr>
-  `).join('')
+  // Pricing: user-entered Final Amount — 70% @5% GST + 30% @18% GST
+  const systemCapacity = parseFloat(quote.systemCapacity) || 0
+  const finalAmount    = parseFloat(quote.finalAmount) || 0
+  const legacyTotal    = systemCapacity * (parseFloat(quote.ratePerKw) || 60000)
+  const totalCost      = Math.round(finalAmount > 0 ? finalAmount : legacyTotal)
+  const solarPortion   = Math.round(totalCost * 0.70)
+  const commPortion    = totalCost - solarPortion
+  const solarBase      = Math.round(solarPortion / 1.05)
+  const solarGst       = solarPortion - solarBase
+  const commBase       = Math.round(commPortion / 1.18)
+  const commGst        = commPortion - commBase
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -142,11 +136,10 @@ export function generatePrintHTML(quote, settings) {
     font-size: 11.5px;
     text-align: left;
   }
-  .pricing-table th:last-child, .pricing-table th:nth-child(2), .pricing-table th:nth-child(3) {
+  .pricing-table th:nth-child(2), .pricing-table th:nth-child(3), .pricing-table th:nth-child(4) {
     text-align: right;
   }
-  .subtotal-row td { background: #f1f5f9; font-weight: 600; border-top: 2px solid #cbd5e1; }
-  .subsidy-row td { background: #d1fae5 !important; color: #065f46; font-weight: 600; }
+  .total-row td { background: #0F2A4A !important; color: white !important; font-weight: 700; font-size: 13.5px; }
   .net-row td { background: #fef3c7 !important; color: #92400e; font-weight: 800; font-size: 14px; }
   /* Terms */
   .terms-section { margin-top: 20px; }
@@ -204,7 +197,7 @@ export function generatePrintHTML(quote, settings) {
   </div>
 
   <!-- Quote Meta Bar -->
-  <div class="quote-meta">
+  <div class="quote-meta" style="grid-template-columns: repeat(3, 1fr); display: grid; justify-content: center;">
     <div class="quote-meta-item">
       <div class="quote-meta-label">Quotation No.</div>
       <div class="quote-meta-value">${quote.id}</div>
@@ -215,15 +208,7 @@ export function generatePrintHTML(quote, settings) {
     </div>
     <div class="quote-meta-item">
       <div class="quote-meta-label">System Capacity</div>
-      <div class="quote-meta-value">${quote.systemCapacity?.toFixed(2)} kW</div>
-    </div>
-    <div class="quote-meta-item">
-      <div class="quote-meta-label">Phase</div>
-      <div class="quote-meta-value">${quote.phase}</div>
-    </div>
-    <div class="quote-meta-item">
-      <div class="quote-meta-label">Status</div>
-      <div class="quote-meta-value">${quote.status}</div>
+      <div class="quote-meta-value">${systemCapacity.toFixed(2)} kW</div>
     </div>
   </div>
 
@@ -239,8 +224,8 @@ export function generatePrintHTML(quote, settings) {
 
   <!-- Subject -->
   <div class="subject-box">
-    <strong>Subject:</strong> Quotation for Installation of ${quote.systemCapacity?.toFixed(2)} kW On-Grid Solar Power System
-    (${quote.installationType || 'Rooftop'}) — ${quote.phase} Phase
+    <strong>Subject:</strong> Quotation for Installation of ${systemCapacity.toFixed(2)} kW On-Grid Solar Power System
+    (${quote.installationType || 'Rooftop'})
   </div>
 
   <!-- System Specifications -->
@@ -255,10 +240,8 @@ export function generatePrintHTML(quote, settings) {
     <tbody>
       <tr><td>Solar Panel</td><td>${quote.panel}</td><td>${quote.panelCount} Nos.</td></tr>
       <tr><td>Inverter</td><td>${quote.inverter}</td><td>1 No.</td></tr>
-      <tr><td>Mounting Structure</td><td>${quote.mountingStructure}</td><td>1 Set</td></tr>
-      <tr><td>Wiring & LA Kit</td><td>${quote.wiringKit}</td><td>1 Set</td></tr>
       <tr><td>Installation</td><td>${quote.installationType || 'Rooftop'}</td><td>Complete</td></tr>
-      <tr><td>System Capacity</td><td>${quote.systemCapacity?.toFixed(3)} kW (${quote.panelCount} × ${quote.panelWattage} Wp)</td><td>—</td></tr>
+      <tr><td>System Capacity</td><td>${systemCapacity.toFixed(3)} kW</td><td>—</td></tr>
     </tbody>
   </table>
 
@@ -267,35 +250,37 @@ export function generatePrintHTML(quote, settings) {
     <thead>
       <tr>
         <th>Description</th>
-        <th style="text-align:center">Qty</th>
-        <th style="text-align:right">Unit Price</th>
-        <th style="text-align:right">Amount</th>
+        <th style="text-align:right">Taxable Value</th>
+        <th style="text-align:right">GST</th>
+        <th style="text-align:right">Total (incl. GST)</th>
       </tr>
     </thead>
     <tbody>
-      ${tableRows}
-      <tr class="subtotal-row">
-        <td colspan="3" style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">Subtotal</td>
-        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">${inr(quote.subtotal)}</td>
-      </tr>
-      ${(quote.gstAmount > 0) ? `
-      <tr class="subtotal-row">
-        <td colspan="3" style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">GST (${quote.gstPercent}%)</td>
-        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">${inr(quote.gstAmount)}</td>
-      </tr>` : ''}
-      <tr class="subtotal-row">
-        <td colspan="3" style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;font-size:14px;">Total System Cost</td>
-        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;font-size:14px;font-weight:800;">${inr(quote.totalCost)}</td>
-      </tr>
-      <tr class="subsidy-row">
-        <td colspan="3" style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">
-          Less: PM Surya Ghar Muft Bijli Yojana (Govt. Subsidy)
+      <tr>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;">
+          <strong>A. Solar Rooftop System</strong><br>
+          <span style="font-size:11.5px;color:#64748b;">Solar Panels (${quote.panel}) × ${quote.panelCount} + Solar Inverter (${quote.inverter})</span>
         </td>
-        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">− ${inr(quote.subsidy)}</td>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">${inr(solarBase)}</td>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;">${inr(solarGst)}<br><span style="font-size:10px;color:#64748b;">@5% GST</span></td>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;font-weight:600;">${inr(solarPortion)}</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;background:#f8fafc;">
+          <strong>B. Installation &amp; Commissioning</strong><br>
+          <span style="font-size:11.5px;color:#64748b;">Civil work, mounting, wiring, testing &amp; grid connection</span>
+        </td>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;background:#f8fafc;">${inr(commBase)}</td>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;background:#f8fafc;">${inr(commGst)}<br><span style="font-size:10px;color:#64748b;">@18% GST</span></td>
+        <td style="padding:8px 10px;border:1px solid #e2e8f0;text-align:right;font-weight:600;background:#f8fafc;">${inr(commPortion)}</td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="3" style="padding:9px 10px;border:1px solid #1e3a5f;text-align:right;">Total System Cost (A + B)</td>
+        <td style="padding:9px 10px;border:1px solid #1e3a5f;text-align:right;font-size:14px;">${inr(totalCost)}</td>
       </tr>
       <tr class="net-row">
-        <td colspan="3" style="padding:10px 10px;border:1px solid #e2e8f0;text-align:right;">NET PAYABLE AMOUNT</td>
-        <td style="padding:10px 10px;border:1px solid #e2e8f0;text-align:right;">${inr(quote.netPayable)}</td>
+        <td colspan="3" style="padding:10px 10px;border:1px solid #f59e0b;text-align:right;font-size:13.5px;">NET PAYABLE AMOUNT</td>
+        <td style="padding:10px 10px;border:1px solid #f59e0b;text-align:right;font-size:15px;">${inr(totalCost)}</td>
       </tr>
     </tbody>
   </table>
@@ -350,8 +335,7 @@ export function generatePrintHTML(quote, settings) {
   </div>
 
   <div style="text-align:center;margin-top:18px;font-size:10px;color:#94a3b8;border-top:1px solid #e2e8f0;padding-top:10px;">
-    This is a computer-generated quotation. Valid for 30 days from the date of issue.
-    Prices are subject to change without notice. GST extra as applicable.
+    This quotation is valid for 30 days from the date of issue. Prices are subject to change without prior notice. GST applicable as per government rates.
   </div>
 </div>
 </body>

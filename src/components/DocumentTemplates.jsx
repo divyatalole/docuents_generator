@@ -38,8 +38,8 @@ function fmtDateLong(iso) {
 export function generateWCRHTML(quote, settings, common, extra) {
   const company = settings?.company || {}
   const vendorName = company.name || 'Solartech'
-  const capacityKW = quote.systemCapacity?.toFixed(2) || '0.00'
-  const totalKWP = Math.round((quote.panelCount || 0) * (quote.panelWattage || 0))
+  const capacityKW = parseFloat(quote.systemCapacity || 0).toFixed(2)
+  const totalKWP = (((quote.panelCount || 0) * (quote.panelWattage || 0)) / 1000).toFixed(2)
   const sanctionLine = extra.sanctionNumber
     ? `${extra.sanctionNumber}  Dt: ${extra.sanctionDate || ''}`
     : `Dt: ${extra.sanctionDate || ''}`
@@ -62,7 +62,7 @@ export function generateWCRHTML(quote, settings, common, extra) {
     <tr><td class="center">3</td><td>Site/Location With Complete Address</td><td>${quote.address || ''}</td></tr>
     <tr><td class="center">4</td><td>Category: Govt/Private Sector</td><td>${extra.category || 'Private'}</td></tr>
     <tr><td class="center">5</td><td>Sanction number Dt:</td><td>${sanctionLine}</td></tr>
-    <tr><td class="center" rowspan="2">6</td><td>Sanctioned Capacity of solar PV system (KW) Installed</td><td>${capacityKW} Kw</td></tr>
+    <tr><td class="center" rowspan="2">6</td><td>Sanctioned Capacity of solar PV system (KW) Installed</td><td>${totalKWP} Kw</td></tr>
     <tr><td>Capacity of solar PV system (KW)</td><td>${capacityKW} Kw</td></tr>
 
     <tr><td class="center" rowspan="7">7</td><td colspan="2" class="section-header">Specification of the Modules</td></tr>
@@ -128,8 +128,10 @@ replaced/repaired free of cost in the CMC period.</p>
 export function generateAnnexureIHTML(quote, settings, common, extra) {
   const company = settings?.company || {}
   const vendorName = company.name || 'Solartech'
-  const capacityKW = quote.systemCapacity?.toFixed(2) || '0.00'
-  const inverterMake = quote.inverter?.split(' ')[0]?.toUpperCase() || ''
+  const capacityKW = parseFloat(quote.systemCapacity || 0).toFixed(2)
+  const totalKWP = (((quote.panelCount || 0) * (quote.panelWattage || 0)) / 1000).toFixed(2)
+  const inverterMake = (extra.inverterMake || quote.inverter?.split(' ')[0] || '').toUpperCase()
+  const inverterCapacity = extra.inverterCapacity || capacityKW
   const installDate = fmtDate(common.installationDate) || extra.installationDate || ''
   const installDateLong = fmtDateLong(common.installationDate) || extra.installationDate || ''
 
@@ -165,7 +167,7 @@ export function generateAnnexureIHTML(quote, settings, common, extra) {
     <tr><td class="center">8</td><td>Sanctioned Capacity</td><td>${capacityKW} Kw</td></tr>
     <tr><td class="center">9</td><td>Capacity Type</td><td>Residential</td></tr>
     <tr><td class="center">10</td><td>Project Model</td><td>Capex</td></tr>
-    <tr><td class="center">11</td><td>RE installed Capacity (Rooftop)</td><td>${capacityKW} Kw</td></tr>
+    <tr><td class="center">11</td><td>RE installed Capacity (Rooftop)</td><td>${totalKWP} Kw</td></tr>
     <tr><td class="center">12</td><td>RE installed Capacity (Rooftop + Ground) (KW)</td><td>0</td></tr>
     <tr><td class="center">13</td><td>RE installed Capacity (Ground) (KW)</td><td>0 kw</td></tr>
     <tr><td class="center">14</td><td>Installation date</td><td>${installDate}</td></tr>
@@ -174,10 +176,10 @@ export function generateAnnexureIHTML(quote, settings, common, extra) {
       <td colspan="2">
         <strong>Solar PV Details</strong><br/>
         <div style="margin-top:8px;">
-          Inverter Capacity (KW) &nbsp;&nbsp; ${capacityKW} Kw<br/>
+          Inverter Capacity (KW) &nbsp;&nbsp; ${inverterCapacity} Kw<br/>
           Inverter Make &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${inverterMake}<br/>
           No. of PV Modules &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ${quote.panelCount || ''}<br/>
-          Module Capacity (KW) &nbsp;&nbsp; ${capacityKW} KW
+          Module Capacity (KW) &nbsp;&nbsp; ${totalKWP} KW
         </div>
       </td>
     </tr>
@@ -222,9 +224,14 @@ PHOTOVOLTAIC POWER PLANT (with Net-metering facility)</p>
 export function generateDCRHTML(quote, settings, common, extra) {
   const company = settings?.company || {}
   const vendorName = company.name || 'Solartech'
-  const capacityKW = quote.systemCapacity?.toFixed(2) || '0.00'
+  const capacityKW = parseFloat(quote.systemCapacity || 0).toFixed(2)
+  const totalKWP = (((quote.panelCount || 0) * (quote.panelWattage || 0)) / 1000).toFixed(2)
   const panelMake = extra.panelMake || quote.panel?.split(' ')[0] || ''
   const appDate = fmtDate(extra.applicationDate)
+  const sigName = extra.authorizedPerson || company.authorizedSignatory || company.contactPerson || ''
+  const sigDesig = extra.designation || company.designation || 'Director'
+  const sigPhone = company.contact || ''
+  const sigEmail = company.email || ''
 
   const serials = (common.serialNumbers || '')
     .split(/[\n,]/).map(s => s.trim()).filter(Boolean)
@@ -254,7 +261,7 @@ export function generateDCRHTML(quote, settings, common, extra) {
 domestically manufactured using domestic manufactured solar cells. The details of installed PV Modules are follows:</p>
 
 <div class="indent" style="margin-bottom:16px;">
-  <p>1. PV Module Capacity: ${capacityKW} WP</p>
+  <p>1. PV Module Capacity: ${totalKWP} KWP</p>
   <p>2. Number of PV Modules: ${quote.panelCount || ''}/${quote.panelWattage || ''} watt panel</p>
   <p>3. Sr No of PV Module ${serialsFormatted || '___________________________________________'}</p>
   <p>4. PV Module Make: ${panelMake}</p>
@@ -274,11 +281,11 @@ of the above information will be provided as and when requested by MNRE.</p>
 <div style="margin-top:48px;display:flex;justify-content:flex-end;">
   <div style="width:55%;text-align:left;">
     <p style="text-align:right;margin-bottom:24px;">(Signature With official Seal)</p>
-    <p>For M/S……………………………………………………….</p>
-    <p style="margin-top:12px;">Name:………………………………………………………</p>
-    <p style="margin-top:12px;">Designation:……………………………………………</p>
-    <p style="margin-top:12px;">Phone:…………………………………………………</p>
-    <p style="margin-top:12px;">Email:……………………………………………………</p>
+    <p>For M/S. <strong>${vendorName}</strong></p>
+    <p style="margin-top:12px;">Name: <strong>${sigName}</strong></p>
+    <p style="margin-top:12px;">Designation: <strong>${sigDesig}</strong></p>
+    <p style="margin-top:12px;">Phone: ${sigPhone}</p>
+    <p style="margin-top:12px;">Email: ${sigEmail}</p>
   </div>
 </div>
 
@@ -290,8 +297,8 @@ export function generateCFAHTML(quote, settings, common, extra) {
   const company = settings?.company || {}
   const vendorName = company.name || 'Solartech'
   const vendorAddress = extra.vendorAddress || company.address || ''
-  const capacityKW = quote.systemCapacity?.toFixed(2) || '0.00'
-  const agreementDateLong = fmtDateLong(extra.agreementDate)
+  const capacityKW = parseFloat(quote.systemCapacity || 0).toFixed(2)
+  const agreementDateLong = fmtDateLong(extra.agreementDate || common.agreementDate || '')
   const paymentTerms = extra.paymentTerms || '25% at booking, 65% before dispatch of materials, 10% before meter fixing & system handover.'
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
@@ -358,7 +365,11 @@ test, commission and carry out Operation &amp; Maintenance of the Rooftop Solar 
   <li><strong>Testing and Commissioning:</strong> The vendor shall be present at the time of testing and commissioning by the DISCOM.</li>
   <li><strong>Operation &amp; Maintenance:</strong> Five (5) years Comprehensive Operation and Maintenance including overhauling, wear and tear and regular checking at proper interval shall be in the scope of vendor.</li>
   <li><strong>Insurance:</strong> Any insurance cost pertaining to material transfer/storage before commissioning of the system shall be in the scope of the vendor.</li>
-  <li><strong>Performance of Plant:</strong> The Performance Ratio (PR) of Plant must be 75% at the time of commissioning. Vendor must maintain the PR of the plant till warranty of project i.e. 5 years from the date of commissioning.</li>
+  <li><strong>Applicable Standard:</strong> The system must meet the technical standards and specifications notified by MNRE. The vendor is solely responsible to supply component and service which meets the technical standards and specification prescribed by MNRE and State DISCOMs.</li>
+  <li><strong>Project/system cost &amp; payment terms:</strong> The cost of the plant and payment schedule should be mutually discussed and decided between the vendor and consumer. The consumer may opt for milestone-based payment to the vendor and the same shall be included in the agreement.</li>
+  <li><strong>Dispute:</strong> In-case of any dispute between consumer and vendor (in supply/installation/maintenance of system or payment terms), both parties must settle the same mutually or as per law. MNRE/DISCOM shall not be liable for, and would not be a party to any dispute arising between vendor and consumer.</li>
+  <li><strong>Subsidy / Project Related Documents:</strong> Vendor must provide all the documents to consumer and help in uploading the same to National Portal for smooth release of subsidy.</li>
+  <li><strong>Performance of Plant:</strong> The Performance Ratio (PR) of Plant must be 75% at the time of commissioning of the project by DISCOM or its authorised agency. Vendor must provide (returnable basis) radiation sensor with valid calibration certificate of any NABL / International laboratory at the time of commissioning / testing of the plant. Vendor must maintain the PR of the plant till warranty of project i.e. 5 years from the date of commissioning.</li>
 </ol>
 
 <p style="margin:16px 0;font-weight:bold;">19. Mutually Agreed Terms of Payment</p>
@@ -389,18 +400,20 @@ test, commission and carry out Operation &amp; Maintenance of the Rooftop Solar 
 
 // ─── 5. Net Metering Agreement ─────────────────────────────────────────────
 export function generateNetMeteringHTML(quote, settings, common, extra) {
-  const capacityKW = quote.systemCapacity?.toFixed(2) || '0.00'
-  const agreementDay = extra.agreementDate ? new Date(extra.agreementDate).getDate() : ''
-  const agreementMonthYear = extra.agreementDate
-    ? new Date(extra.agreementDate).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
+  const capacityKW = parseFloat(quote.systemCapacity || 0).toFixed(2)
+  const agDate = extra.agreementDate || common.agreementDate || ''
+  const agreementDay = agDate ? new Date(agDate).getDate() : ''
+  const agreementMonthYear = agDate
+    ? new Date(agDate).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
     : ''
+  const stampTopPad = extra.stampPaperMode ? 'padding-top: 110px;' : ''
 
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/>
 <title>Net Metering Agreement — ${quote.customerName}</title>
 <style>${DOC_STYLES}
   p { font-size:13px; line-height:1.8; margin-bottom:12px; text-align:justify; font-weight:bold; }
   .clause-num { font-weight:bold; }
-</style></head><body><div class="page">
+</style></head><body><div class="page" style="${stampTopPad}">
 
 <h1 style="margin-bottom:20px;">Net Metering</h1>
 

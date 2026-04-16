@@ -1,11 +1,13 @@
 import React from 'react'
-import { LayoutDashboard, FilePlus, FileText, TrendingUp, Settings, Sun, Calculator } from 'lucide-react'
+import { LayoutDashboard, FilePlus, FileText, Settings, Sun, Calculator, Receipt, ShoppingCart } from 'lucide-react'
 import { PAGES } from '../constants.js'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', page: PAGES.DASHBOARD, icon: LayoutDashboard },
-  { label: 'New Quotation', page: PAGES.NEW_QUOTATION, icon: FilePlus },
+  { label: 'Dashboard',      page: PAGES.DASHBOARD,      icon: LayoutDashboard },
+  { label: 'New Quotation',  page: PAGES.NEW_QUOTATION,  icon: FilePlus },
   { label: 'All Quotations', page: PAGES.ALL_QUOTATIONS, icon: FileText },
+  { label: 'Sale Bills',     page: PAGES.SALE_BILLS,     icon: Receipt },
+  { label: 'Purchase Bills', page: PAGES.PURCHASE_BILLS, icon: ShoppingCart },
   { label: 'ROI Calculator', page: PAGES.ROI_CALCULATOR, icon: Calculator },
 ]
 

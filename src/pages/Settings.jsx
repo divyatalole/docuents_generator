@@ -278,6 +278,21 @@ export default function Settings() {
               <label className="form-label">Email</label>
               <input className="form-control" value={form.company.email} onChange={e => set('company.email', e.target.value)} />
             </div>
+            <div className="form-row" style={{ marginTop: 12, marginBottom: 0 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Authorized Signatory Name</label>
+                <input className="form-control" placeholder="e.g. Subhash Talole"
+                  value={form.company.authorizedSignatory || ''}
+                  onChange={e => set('company.authorizedSignatory', e.target.value)} />
+                <div className="form-hint">Used in DCR / Annexure-A signature block</div>
+              </div>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Designation</label>
+                <input className="form-control" placeholder="e.g. Director"
+                  value={form.company.designation || ''}
+                  onChange={e => set('company.designation', e.target.value)} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -310,17 +325,21 @@ export default function Settings() {
         <div className="settings-section-title"><SettingsIcon size={17} /> Default Values</div>
         <div className="card">
           <div className="card-body">
-            <div className="form-row-3">
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Rate per kW (₹/kW)</label>
+                <input className="form-control" type="number" value={form.defaults.ratePerKw ?? 60000}
+                  onChange={e => set('defaults.ratePerKw', e.target.value)} />
+                <div className="form-hint">70% Solar (5% GST) + 30% Commissions (18% GST)</div>
+              </div>
               <div className="form-group">
                 <label className="form-label">Default Govt. Subsidy (₹)</label>
-                <input className="form-control" type="number" value={form.defaults.subsidy} onChange={e => set('defaults.subsidy', e.target.value)} />
+                <input className="form-control" type="number" value={form.defaults.subsidy}
+                  onChange={e => set('defaults.subsidy', e.target.value)} />
                 <div className="form-hint">PM Surya Ghar Muft Bijli Yojana</div>
               </div>
-              <div className="form-group">
-                <label className="form-label">Default GST %</label>
-                <input className="form-control" type="number" step="0.5" value={form.defaults.gstPercent} onChange={e => set('defaults.gstPercent', e.target.value)} />
-                <div className="form-hint">0 = GST inclusive pricing</div>
-              </div>
+            </div>
+            <div className="form-row-3">
               <div className="form-group">
                 <label className="form-label">AMC Years</label>
                 <input className="form-control" type="number" value={form.defaults.amcYears} onChange={e => set('defaults.amcYears', e.target.value)} />

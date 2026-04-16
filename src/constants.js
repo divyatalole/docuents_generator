@@ -5,5 +5,9 @@ export const PAGES = {
   QUOTATION_PREVIEW: 'quotation-preview',
   ALL_QUOTATIONS: 'all-quotations',
   ROI_CALCULATOR: 'roi-calculator',
-  SETTINGS: 'settings'
+  SETTINGS: 'settings',
+  SALE_BILLS: 'sale-bills',
+  BILL_PREVIEW: 'bill-preview',
+  PURCHASE_BILLS: 'purchase-bills',
+  PURCHASE_BILL_PREVIEW: 'purchase-bill-preview'
 }

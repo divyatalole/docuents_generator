@@ -162,7 +162,7 @@ export default function AllQuotations({ navigate }) {
                       </div>
                     </td>
                     <td style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>
-                      {q.systemCapacity?.toFixed(2)} kW
+                      {parseFloat(q.systemCapacity || 0).toFixed(2)} kW
                     </td>
                     <td style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 600 }}>
                       {inr(q.totalCost)}

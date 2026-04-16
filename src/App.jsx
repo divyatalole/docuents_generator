@@ -8,18 +8,26 @@ import QuotationPreview from './pages/QuotationPreview.jsx'
 import AllQuotations from './pages/AllQuotations.jsx'
 import ROICalculator from './pages/ROICalculator.jsx'
 import Settings from './pages/Settings.jsx'
+import SaleBills from './pages/SaleBills.jsx'
+import BillPreview from './pages/BillPreview.jsx'
+import PurchaseBills from './pages/PurchaseBills.jsx'
+import PurchaseBillPreview from './pages/PurchaseBillPreview.jsx'
 import { PAGES } from './constants.js'
 
 export { PAGES }
 
 const PAGE_TITLES = {
-  [PAGES.DASHBOARD]: { title: 'Dashboard', sub: 'Welcome back — PV-Enviro Energies Pvt. Ltd.' },
-  [PAGES.NEW_QUOTATION]: { title: 'New Quotation', sub: 'Create a new solar installation quote' },
-  [PAGES.EDIT_QUOTATION]: { title: 'Edit Quotation', sub: 'Update quotation details' },
+  [PAGES.DASHBOARD]:         { title: 'Dashboard',         sub: 'Welcome back — PV-Enviro Energies Pvt. Ltd.' },
+  [PAGES.NEW_QUOTATION]:     { title: 'New Quotation',     sub: 'Create a new solar installation quote' },
+  [PAGES.EDIT_QUOTATION]:    { title: 'Edit Quotation',    sub: 'Update quotation details' },
   [PAGES.QUOTATION_PREVIEW]: { title: 'Quotation Preview', sub: 'Review and export quotation' },
-  [PAGES.ALL_QUOTATIONS]: { title: 'All Quotations', sub: 'Manage all quotations' },
-  [PAGES.ROI_CALCULATOR]: { title: 'ROI Calculator', sub: 'Calculate solar investment returns' },
-  [PAGES.SETTINGS]: { title: 'Settings', sub: 'Manage company details and defaults' }
+  [PAGES.ALL_QUOTATIONS]:    { title: 'All Quotations',    sub: 'Manage all quotations' },
+  [PAGES.ROI_CALCULATOR]:    { title: 'ROI Calculator',    sub: 'Calculate solar investment returns' },
+  [PAGES.SETTINGS]:          { title: 'Settings',          sub: 'Manage company details and defaults' },
+  [PAGES.SALE_BILLS]:             { title: 'Sale Bills',         sub: 'Tax invoices and payment tracking' },
+  [PAGES.BILL_PREVIEW]:           { title: 'Invoice Detail',     sub: 'View and export tax invoice' },
+  [PAGES.PURCHASE_BILLS]:         { title: 'Purchase Bills',     sub: 'Track supplier bills and expenses' },
+  [PAGES.PURCHASE_BILL_PREVIEW]:  { title: 'Purchase Bill',      sub: 'View supplier bill and attachment' }
 }
 
 export default function App() {
@@ -49,6 +57,14 @@ export default function App() {
         return <ROICalculator navigate={navigate} />
       case PAGES.SETTINGS:
         return <Settings navigate={navigate} />
+      case PAGES.SALE_BILLS:
+        return <SaleBills navigate={navigate} fromQuote={pageData?.fromQuote || null} />
+      case PAGES.BILL_PREVIEW:
+        return <BillPreview navigate={navigate} billId={pageData?.billId} />
+      case PAGES.PURCHASE_BILLS:
+        return <PurchaseBills navigate={navigate} />
+      case PAGES.PURCHASE_BILL_PREVIEW:
+        return <PurchaseBillPreview navigate={navigate} billId={pageData?.billId} />
       default:
         return <Dashboard navigate={navigate} />
     }
